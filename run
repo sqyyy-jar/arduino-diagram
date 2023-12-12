@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+arduino-cli compile -u -p /dev/ttyACM0 -b arduino:avr:mega \
+    --build-path ./target/ \
+    Diagram &&
+arduino-cli monitor -p /dev/ttyACM0
