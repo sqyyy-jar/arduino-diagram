@@ -23,7 +23,7 @@
 #define BUFFER_SIZE 128                                                             // Size of the buffer
 #define PIXEL_TRANSLATION (256 / DISPLAY_HEIGHT)                                    // Translation between temperature and pixels
 #define TICK_DELAY 2000                                                             // Delay between ticks in ms
-#define ENABLE_SERIAL                                                               // Enable the serial connection
+#define ENABLE_SERIAL true                                                          // Enable the serial connection
 #define TEMPERATURE_MIN -10.0                                                       // Minimum temperature
 #define TEMPERATURE_MAX 35.0                                                        // Maximum temperature
 #define TEMPERATURE_BOUND (TEMPERATURE_MAX - TEMPERATURE_MIN)                       // Upper unsigned temperature bound
@@ -68,7 +68,10 @@ void update_display() {
 }
 
 void setup() {
-    Serial.begin(9600);
+    if (ENABLE_SERIAL) {
+        Serial.begin(9600);
+        while (!Serial) {;}                                                         // Wait for serial to connect
+    }
     dht.begin();                                                                    // Start the DHT sensor
     if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {                     // Initialize the display
         Serial.println(F("SSD1306 allocation failed"));                             // Panic on failure
