@@ -7,5 +7,8 @@ pkgs.mkShell {
         avrdude
         pkgsCross.avr.buildPackages.gcc
         clang
+        pkg-config
+        libudev-zero
+        msgpack-tools
     ];
 }
