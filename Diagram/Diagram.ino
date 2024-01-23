@@ -19,14 +19,12 @@
 
 // Other constants
 
-#define STARTUP_SECS 2                                                              // Time for startup in seconds
 #define BUFFER_SIZE 128                                                             // Size of the buffer
-#define PIXEL_TRANSLATION (256 / DISPLAY_HEIGHT)                                    // Translation between temperature and pixels
 #define TICK_DELAY 1000                                                             // Delay between ticks in ms
-#define ENABLE_SERIAL true                                                          // Enable the serial connection
+#define ENABLE_SERIAL false                                                         // Enable the serial connection
 #define TEMPERATURE_MIN -10.0                                                       // Minimum temperature
-#define TEMPERATURE_MAX 50.0                                                        // Maximum temperature
-#define TEMPERATURE_BOUND (TEMPERATURE_MAX - TEMPERATURE_MIN)                       // Upper unsigned temperature bound
+#define TEMPERATURE_MAX 40.0                                                        // Maximum temperature
+#define TEMPERATURE_RANGE (TEMPERATURE_MAX - TEMPERATURE_MIN)                       // Range of the possible temperatures
 
 // Runtime variables
 
@@ -54,10 +52,10 @@ uint8_t buffer_get(size_t index) {
 void tick() {
     float temperature = dht.readTemperature(false);                                 // Read temperature in Celcius
     Serial.println(temperature);
-    // temperature = min(max(temperature, TEMPERATURE_MAX), TEMPERATURE_MIN);          // Fit the value in the range
-    // temperature -= TEMPERATURE_MIN;                                                 // Make the value positive
-    // uint8_t value = (uint8_t)(temperature / TEMPERATURE_BOUND * 255.0);             // Fit the value into a byte
-    uint8_t value = (uint8_t) temperature;
+    temperature = max(min(temperature, TEMPERATURE_MAX), TEMPERATURE_MIN);          // Fit the value in the range
+    temperature -= TEMPERATURE_MIN;                                                 // Make value relative to 0
+    Serial.println(temperature);
+    uint8_t value = (uint8_t)((temperature / TEMPERATURE_RANGE) * 255.0);           // Fit the value into a byte
     Serial.println(value);
     buffer_push(value);                                                             // Push the value into the buffer
     if (ENABLE_SERIAL) {
@@ -69,10 +67,10 @@ void update_display() {
     display.clearDisplay();
     for (size_t i = 0; i < DISPLAY_WIDTH && i < len; i++) {
         uint8_t value = buffer_get(i);
-        for (int j = 0; j <= value; j++) {
+        uint8_t peak = (uint8_t)(((uint16_t)value * DISPLAY_HEIGHT) / 255L);
+        for (int j = 0; j <= peak; j++) {                                           // Draw column
             display.drawPixel(i, j, SSD1306_WHITE);
         }
-        // display.drawPixel(i, value / PIXEL_TRANSLATION, SSD1306_WHITE);
     }
     display.display();
 }
